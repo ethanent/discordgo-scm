@@ -34,6 +34,12 @@ func (s *SCM) AddFeature(f *Feature) {
 	s.Features = append(s.Features, f)
 }
 
+func (s *SCM) AddFeatures(ff []*Feature) {
+	for _, f := range ff {
+		s.AddFeature(f)
+	}
+}
+
 // CreateCommands registers any commands (Features with Type discordgo.InteractionApplicationCommand or discordgo.InteractionApplicationCommandAutocomplete) with the API.
 // Leave guildID as empty string for global commands.
 // NOTE: Bot must already be started beforehand.
