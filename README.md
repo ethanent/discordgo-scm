@@ -1,4 +1,5 @@
 # discordgo-scm
+
 > Slash commands manager for discordgo
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/ethanent/discordgo-scm.svg)](https://pkg.go.dev/github.com/ethanent/discordgo-scm)
@@ -11,10 +12,11 @@ go get github.com/ethanent/discordgo-scm
 
 ## Usage
 
-SCM is based around the concept of a [Feature](https://pkg.go.dev/github.com/ethanent/discordgo-scm#Feature).
-It's meant to be a somewhat futureproof way to handle all kinds of Discord interactions.
+SCM is based around the concept of a [Feature](https://pkg.go.dev/github.com/ethanent/discordgo-scm#Feature). It's meant
+to be a somewhat futureproof way to handle all kinds of Discord interactions.
 
-You may create Features for a number of different interaction types, including ApplicationCommand, ApplicationCommandAutocomplete, and MessageComponent.
+You may create Features for a number of different interaction types, including ApplicationCommand,
+ApplicationCommandAutocomplete, and MessageComponent.
 
 | Interaction Type                                    | Relevant Feature Properties       |
 |-----------------------------------------------------|-----------------------------------|
@@ -34,6 +36,12 @@ Add a Feature to your SCM:
 
 ```go
 m.AddFeature(myFeature)
+```
+
+Have your SCM handle interactions with a bot:
+
+```go
+s.AddHandler(m.HandleInteractionCreate)
 ```
 
 Register ApplicationCommands with your bot:

@@ -88,7 +88,7 @@ func (s *SCM) DeleteCommands(c *discordgo.Session, guildID string) error {
 	return nil
 }
 
-func (s *SCM) HandleInteraction(c *discordgo.Session, i *discordgo.InteractionCreate) {
+func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.InteractionCreate) {
 	// Find relevant Feature
 	var relevantFeature *Feature
 
