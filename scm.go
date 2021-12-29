@@ -19,13 +19,13 @@ type Feature struct {
 
 type SCM struct {
 	Features      []*Feature
-	BotCommandIDs map[string][]string
+	botCommandIDs map[string][]string
 }
 
 func NewSCM() *SCM {
 	return &SCM{
 		Features:      []*Feature{},
-		BotCommandIDs: map[string][]string{},
+		botCommandIDs: map[string][]string{},
 	}
 }
 
@@ -40,7 +40,7 @@ func (s *SCM) AddFeature(f *Feature) {
 func (s *SCM) CreateCommands(c *discordgo.Session, guildID string) error {
 	appID := c.State.User.ID
 
-	if _, ok := s.BotCommandIDs[appID]; ok {
+	if _, ok := s.botCommandIDs[appID]; ok {
 		return errors.New("this application already has registered commands once")
 	}
 
@@ -64,7 +64,7 @@ func (s *SCM) CreateCommands(c *discordgo.Session, guildID string) error {
 		createdCommandIDs = append(createdCommandIDs, cc.ID)
 	}
 
-	s.BotCommandIDs[appID] = createdCommandIDs
+	s.botCommandIDs[appID] = createdCommandIDs
 
 	return nil
 }
@@ -73,7 +73,7 @@ func (s *SCM) CreateCommands(c *discordgo.Session, guildID string) error {
 func (s *SCM) DeleteCommands(c *discordgo.Session, guildID string) error {
 	appID := c.State.User.ID
 
-	for _, ccID := range s.BotCommandIDs[appID] {
+	for _, ccID := range s.botCommandIDs[appID] {
 		if err := c.ApplicationCommandDelete(appID, guildID, ccID); err != nil {
 			return err
 		}
