@@ -7,7 +7,7 @@
 ## Install
 
 ```sh
-go get github.com/ethanent/discordgo-scm
+go get github.com/ethanent/discordgo-scm/v2
 ```
 
 ## Usage
