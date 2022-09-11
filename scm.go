@@ -97,7 +97,7 @@ func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.Interac
 
 	for _, f := range s.Features {
 		if f.Type == i.Type {
-			if i.Type == discordgo.InteractionMessageComponent ||{
+			if i.Type == discordgo.InteractionMessageComponent {
 				// If this is a MessageComponent interaction, check that the CustomID matches
 				if f.CustomID == i.MessageComponentData().CustomID || f.CustomID == "" {
 					relevantFeature = f
