@@ -97,20 +97,26 @@ func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.Interac
 
 	for _, f := range s.Features {
 		if f.Type == i.Type {
-			if i.Type == discordgo.InteractionMessageComponent {
+			if i.Type == discordgo.InteractionMessageComponent ||{
 				// If this is a MessageComponent interaction, check that the CustomID matches
-
 				if f.CustomID == i.MessageComponentData().CustomID || f.CustomID == "" {
 					relevantFeature = f
 					break
 				}
-			} else {
+			} else if i.Type == discordgo.InteractionApplicationCommand || i.Type == discordgo.InteractionApplicationCommandAutocomplete {
 				// If it's a command interaction such as an ApplicationCommand or ApplicationCommandAutocomplete, check name.
-
 				if f.ApplicationCommand.Name == i.ApplicationCommandData().Name {
 					relevantFeature = f
 					break
 				}
+			} else if i.Type == discordgo.InteractionModalSubmit {
+				// Modal compares by CustomID
+				if i.ModalSubmitData().CustomID == f.CustomID || f.CustomID == "" {
+					relevantFeature = f
+					break
+				}
+			} else {
+				// not sure what to do w this
 			}
 		}
 	}
