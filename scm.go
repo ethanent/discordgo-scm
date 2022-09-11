@@ -9,11 +9,14 @@ type Feature struct {
 	Type    discordgo.InteractionType
 	Handler func(*discordgo.Session, *discordgo.InteractionCreate)
 
-	// ApplicationCommand if Type is discordgo.InteractionApplicationCommand or discordgo.InteractionApplicationCommandAutocomplete
-	// Not needed for Type discordgo.InteractionMessageComponent
+	// ApplicationCommand if Type is discordgo.InteractionApplicationCommand
+	// or discordgo.InteractionApplicationCommandAutocomplete.
+	// Not needed for Type discordgo.InteractionMessageComponent.
 	ApplicationCommand *discordgo.ApplicationCommand
 
-	// CustomID if Type is discordgo.InteractionMessageComponent
+	// CustomID if Type is discordgo.InteractionMessageComponent.
+	// Leave as zero value "" to receive all InteractionMessageComponent
+	// interactions.
 	CustomID string
 }
 
@@ -97,7 +100,7 @@ func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.Interac
 			if i.Type == discordgo.InteractionMessageComponent {
 				// If this is a MessageComponent interaction, check that the CustomID matches
 
-				if f.CustomID == i.MessageComponentData().CustomID {
+				if f.CustomID == i.MessageComponentData().CustomID || f.CustomID == "" {
 					relevantFeature = f
 					break
 				}
