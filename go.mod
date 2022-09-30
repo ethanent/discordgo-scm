@@ -1,8 +1,11 @@
 module github.com/ethanent/discordgo-scm/v2
 
-go 1.17
+go 1.19
 
-require github.com/bwmarrin/discordgo v0.26.1
+require (
+	github.com/bwmarrin/discordgo v0.26.1
+	github.com/gobwas/glob v0.2.3
+)
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect

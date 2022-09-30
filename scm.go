@@ -2,11 +2,16 @@ package discordgo_scm
 
 import (
 	"errors"
+
 	"github.com/bwmarrin/discordgo"
+	"github.com/gobwas/glob"
 )
 
+// Feature is a handler for various events
 type Feature struct {
-	Type    discordgo.InteractionType
+	Type discordgo.InteractionType
+
+	// Handler function for feature interactions
 	Handler func(*discordgo.Session, *discordgo.InteractionCreate)
 
 	// ApplicationCommand if Type is discordgo.InteractionApplicationCommand
@@ -15,9 +20,10 @@ type Feature struct {
 	ApplicationCommand *discordgo.ApplicationCommand
 
 	// CustomID if Type is discordgo.InteractionMessageComponent.
-	// Leave as zero value "" to receive all InteractionMessageComponent
-	// interactions.
+	// It is in glob format. Use "" (zero string) or "*" to match all CustomIDs
 	CustomID string
+
+	customIDGlob *glob.Glob
 }
 
 type SCM struct {
@@ -33,24 +39,33 @@ func NewSCM() *SCM {
 }
 
 // AddFeature adds a Feature to the SCM.
-func (s *SCM) AddFeature(f *Feature) {
+func (s *SCM) AddFeature(f *Feature) error {
+	g, err := glob.Compile(f.CustomID)
+	if err != nil {
+		return err
+	}
+	f.customIDGlob = &g
 	s.Features = append(s.Features, f)
+	return nil
 }
 
-func (s *SCM) AddFeatures(ff []*Feature) {
+func (s *SCM) AddFeatures(ff []*Feature) error {
 	for _, f := range ff {
-		s.AddFeature(f)
+		if err := s.AddFeature(f); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 // CreateCommands registers any commands (Features with Type discordgo.InteractionApplicationCommand or discordgo.InteractionApplicationCommandAutocomplete) with the API.
 // Leave guildID as empty string for global commands.
-// NOTE: Bot must already be started beforehand.
+// Session must already be connected beforehand.
 func (s *SCM) CreateCommands(c *discordgo.Session, guildID string) error {
 	appID := c.State.User.ID
 
 	if _, ok := s.botCommandIDs[appID]; ok {
-		return errors.New("this application already has registered commands once")
+		return errors.New("this application has already registered commands")
 	}
 
 	var applicationCommands []*discordgo.ApplicationCommand
@@ -92,37 +107,35 @@ func (s *SCM) DeleteCommands(c *discordgo.Session, guildID string) error {
 }
 
 func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.InteractionCreate) {
-	// Find relevant Feature
-	var relevantFeature *Feature
+	// Call relevant Feature handlers
 
 	for _, f := range s.Features {
-		if f.Type == i.Type {
-			if i.Type == discordgo.InteractionMessageComponent {
-				// If this is a MessageComponent interaction, check that the CustomID matches
-				if f.CustomID == i.MessageComponentData().CustomID || f.CustomID == "" {
-					relevantFeature = f
-					break
-				}
-			} else if i.Type == discordgo.InteractionApplicationCommand || i.Type == discordgo.InteractionApplicationCommandAutocomplete {
-				// If it's a command interaction such as an ApplicationCommand or ApplicationCommandAutocomplete, check name.
-				if f.ApplicationCommand.Name == i.ApplicationCommandData().Name {
-					relevantFeature = f
-					break
-				}
-			} else if i.Type == discordgo.InteractionModalSubmit {
-				// Modal compares by CustomID
-				if i.ModalSubmitData().CustomID == f.CustomID || f.CustomID == "" {
-					relevantFeature = f
-					break
-				}
-			} else {
-				// not sure what to do w this
+		if f.Type != i.Type {
+			continue
+		}
+		isCustomIDMatch := func() bool {
+			return f.CustomID == "" || f.customIDGlob != nil && (*f.customIDGlob).Match(i.ModalSubmitData().CustomID)
+		}
+		match := false
+		if i.Type == discordgo.InteractionMessageComponent {
+			// If this is a MessageComponent interaction, check that the CustomID matches
+			if isCustomIDMatch() {
+				match = true
+			}
+		} else if i.Type == discordgo.InteractionApplicationCommand || i.Type == discordgo.InteractionApplicationCommandAutocomplete {
+			// If it's a command interaction such as an ApplicationCommand or ApplicationCommandAutocomplete, check name.
+			if f.ApplicationCommand.Name == i.ApplicationCommandData().Name {
+				match = true
+			}
+		} else if i.Type == discordgo.InteractionModalSubmit {
+			// Modal compares by CustomID
+			if isCustomIDMatch() {
+				match = true
 			}
 		}
-	}
-
-	// Handle if we have identified a relevant Feature
-	if relevantFeature != nil {
-		relevantFeature.Handler(c, i)
+		if !match {
+			continue
+		}
+		f.Handler(c, i)
 	}
 }
