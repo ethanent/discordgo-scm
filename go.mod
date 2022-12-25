@@ -1,4 +1,4 @@
-module github.com/ethanent/discordgo-scm/v2
+module github.com/ethanent/discordgo-scm/v3
 
 go 1.19
 
