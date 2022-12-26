@@ -114,7 +114,16 @@ func (s *SCM) HandleInteractionCreate(c *discordgo.Session, i *discordgo.Interac
 			continue
 		}
 		isCustomIDMatch := func() bool {
-			return f.CustomID == "" || f.customIDGlob != nil && (*f.customIDGlob).Match(i.ModalSubmitData().CustomID)
+			customID := ""
+			switch i.Type {
+			case discordgo.InteractionMessageComponent:
+				customID = i.MessageComponentData().CustomID
+			case discordgo.InteractionModalSubmit:
+				customID = i.ModalSubmitData().CustomID
+			default:
+				return false
+			}
+			return f.CustomID == "" || f.customIDGlob != nil && (*f.customIDGlob).Match(customID)
 		}
 		match := false
 		if i.Type == discordgo.InteractionMessageComponent {
